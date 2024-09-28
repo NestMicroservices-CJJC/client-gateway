@@ -30,7 +30,11 @@ export class OrdersController {
 
   @Patch(':id')
   changeOrderStatus(@Param('id', ParseUUIDPipe) id: string, @Body() statusDto: StatusDto) {
-    return this.orderClient.send({ cmd: 'changeOrderStatus' }, { id, status: statusDto.status });
+    return this.orderClient.send({ cmd: 'changeOrderStatus' }, { id, status: statusDto.status }).pipe(
+      catchError((err) => {
+        throw new RpcException(err);
+      }),
+    );
 
     /* return {
       id,
