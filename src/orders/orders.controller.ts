@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Inject, Query, ParseUUIDPipe, Patch
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { NATS_SERVICE } from 'src/config';
 import { CreateOrderDto, OrderPaginationDto } from './dto';
-import { catchError } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { StatusDto } from './dto/status.dto';
 
 @Controller('orders')
@@ -15,17 +15,23 @@ export class OrdersController {
   }
 
   @Get()
-  findAll(@Query() orderPaginationDto: OrderPaginationDto) {
-    return this.client.send({ cmd: 'findAllOrders' }, orderPaginationDto);
+  async findAll(@Query() orderPaginationDto: OrderPaginationDto) {
+    try {
+      const orders = await firstValueFrom(this.client.send({ cmd: 'findAllOrders' }, orderPaginationDto));
+      return orders;
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.client.send({ cmd: 'findOneOrder' }, { id }).pipe(
-      catchError((err) => {
-        throw new RpcException(err);
-      }),
-    );
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    try {
+      const order = await firstValueFrom(this.client.send({ cmd: 'findOneOrder' }, { id }));
+      return order;
+    } catch (error) {
+      throw new RpcException(error);
+    }
   }
 
   @Patch(':id')
