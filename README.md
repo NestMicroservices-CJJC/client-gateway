@@ -31,3 +31,11 @@ http://localhost:8222/
 ```
 npm run start:dev
 ```
+
+## PRODUCCIÓN
+
+Ejecutar el comando:
+
+```
+docker build -f dockerfile.prod -t client-gateway .
+```
